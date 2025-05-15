@@ -1,4 +1,5 @@
 // backend/controllers/activationController.js
+
 const {
   findActivationToken,
   findUserByIdAndUpdate,
