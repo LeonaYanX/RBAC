@@ -14,16 +14,12 @@ const {
  * GET /api/users
  */
 exports.getUserList = async (req, res) => {
-  try {
+  
     const users = await findAllUsers();
     if (!users || users.length === 0) {
       return res.status(404).json({ error: "No users found" });
     }
-    res.json({ status: 200, data: users.map(toUserVM) });
-  } catch (err) {
-    console.error("getUserList error:", err);
-    res.status(500).json({ error: "Server error fetching users" });
-  }
+    res.status(200).json({data: users.map(toUserVM) });
 };
 
 /**
@@ -31,18 +27,17 @@ exports.getUserList = async (req, res) => {
  * GET /api/users/:id
  */
 exports.getUser = async (req, res) => {
-  try {
+  
     const { id } = req.params;
-    // проверка валидности ObjectId (можно использовать mongoose.isValidObjectId)
+    
+    if (!id || id.length !== 24) {
+      return res.status(400).json({ error: "Invalid user ID" });
+    }
     const user = await getUserProfileById(id);
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
-    res.json({ status: 200, data: user.map(toUserVM) });
-  } catch (err) {
-    console.error("getUser error:", err);
-    res.status(500).json({ error: "Server error fetching user" });
-  }
+    res.status(200).json({data: user.map(toUserVM) });
 };
 
 /**
@@ -50,17 +45,16 @@ exports.getUser = async (req, res) => {
  * DELETE /api/users/:id
  */
 exports.deleteUser = async (req, res) => {
-  try {
+  
     const { id } = req.params;
+    if (!id || id.length !== 24) {
+      return res.status(400).json({ error: "Invalid user ID" });
+    }
     const result = await deleteUser(id);
     if (!result) {
       return res.status(404).json({ error: "User not found" });
     }
-    res.json({ message: "User deleted successfully" });
-  } catch (err) {
-    console.error("deleteUser error:", err);
-    res.status(500).json({ error: "Server error deleting user" });
-  }
+    res.status(200).json({ message: "User deleted successfully" });
 };
 
 /**
@@ -69,9 +63,15 @@ exports.deleteUser = async (req, res) => {
  * Body: { roleName: string }
  */
 exports.assignRoleToUser = async (req, res) => {
-  try {
+
     const { id } = req.params;
     const { roleName } = req.body;
+    if (!id || id.length !== 24) {
+      return res.status(400).json({ error: "Invalid user ID" });
+    }
+    if (!roleName) {
+      return res.status(400).json({ error: "Role name is required" });
+    }
 
     // 1) находим роль по имени
     const role = await findRoleByName(roleName);
@@ -86,9 +86,5 @@ exports.assignRoleToUser = async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    res.json({ message: "Role assigned", user });
-  } catch (err) {
-    console.error("assignRoleToUser error:", err);
-    res.status(500).json({ error: "Server error assigning role" });
-  }
+    res.status(200).json({ message: "Role assigned", user });
 };

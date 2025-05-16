@@ -9,21 +9,21 @@ const Permission = require("../models/Permission");
 
 dotenv.config();
 mongoose.connect(process.env.MONGO_URI).then(async () => {
-  const keys = [
+  const keys = [ // заполняем массив правами, которые хотим создать
     "user.create",
     "user.read",
-    "role.assign",
-    "user.delete", // право назначать роли
+    "role.assign",// право назначать роли
+    "user.delete", 
   ];
 
   for (const key of keys) {
     const exists = await Permission.findOne({ key });
     if (!exists) {
-      await Permission.create({ key, description: "" });
+      await Permission.create({ key, description: "" }); // создаем право заполнив описание
       console.log(`Created permission: ${key}`);
     }
   }
 
-  console.log("✅ Permissions seeding done");
+  console.log("Permissions seeding done");
   mongoose.disconnect();
 });

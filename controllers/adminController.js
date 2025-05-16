@@ -16,6 +16,9 @@ const {
  */
 exports.createUser = async (req, res) => {
   const { email, roleName } = req.body;
+  if (!email || !roleName) {
+    return res.status(400).json({ error: "Email and role are required" });
+  }
   // 1) Проверка наличия email
   let user = findUserByEmail(email);
   if (user) return res.status(400).json({ error: "User already exists" });
@@ -25,7 +28,7 @@ exports.createUser = async (req, res) => {
   if (!role) return res.status(400).json({ error: "Invalid role" });
 
   // 3) Создаём пользователя со статусом inactive
-  user = createPartialUser({ email, roleId: role._id });
+  user = createPartialUser({ email: email, roleId: role._id });
 
   // 4) Генерируем токен активации (случайная строка)
   const token = crypto.randomBytes(32).toString("hex");

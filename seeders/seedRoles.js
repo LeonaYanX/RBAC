@@ -9,16 +9,17 @@ const Permission = require("../models/Permission");
 
 dotenv.config();
 mongoose.connect(process.env.MONGO_URI).then(async () => {
-  // Только права по users — больше нет никаких post.*
+  // Конфигурация ролей и прав
+  // Здесь можено настроить роли и их права
   const rolesConfig = {
-    user: ["user.read"], // обычный пользователь — только чтение своего профиля
+    user: ["user.read"], // обычный пользователь — только чтение пользователей
     moderator: ["user.read", "user.delete"], // модератор — читать и удалять пользователей
     admin: ["user.*", "role.assign"], // админ — полный CRUD по users + назначение ролей
     assistant: ["user.read"], // ассистент — только чтение
     superadmin: ["*"], // супер-админ — все права
   };
 
-  for (const [roleName, permKeys] of Object.entries(rolesConfig)) {
+  for (const [roleName, permKeys] of Object.entries(rolesConfig)) { // Перебираем роли и их права
     // 1) Собираем ObjectId разрешений по ключам
     let perms;
     if (permKeys.includes("*")) {
@@ -33,12 +34,16 @@ mongoose.connect(process.env.MONGO_URI).then(async () => {
     await Role.findOneAndUpdate(
       { name: roleName },
       { permissions: permIds },
-      { upsert: true, new: true, setDefaultsOnInsert: true }
+      { upsert: true, new: true, setDefaultsOnInsert: true } 
+      // upsert: true — создаёт, если не существует
+      // new: true — возвращает обновлённый документ
+      // setDefaultsOnInsert: true — устанавливает значения по умолчанию
+      // при создании нового документа
     );
 
-    console.log(`✔️ Role synced: ${roleName}`);
+    console.log(` Role synced: ${roleName}`);
   }
 
-  console.log("✅ All user-based roles have been seeded/updated");
+  console.log("All roles have been seeded/updated");
   mongoose.disconnect();
 });

@@ -4,7 +4,7 @@
  * Должен быть последний в цепочке middleware.
  */
 function errorHandler(err, req, res, next) {
-  console.error("💥 Error:", err);
+  console.error("Error:", err);
 
   // Ошибки от express-validator имеют метод array()
   if (err.array) {

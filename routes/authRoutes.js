@@ -27,7 +27,7 @@ router.post("/login", loginRules, validate, asyncHandler(login));
 //    - Тело запроса (JSON): { refreshToken: string }
 //    - Ответ:  { accessToken: string }
 // -----------------------------------------------------------------------------
-router.post("/refresh", refreshToken);
+router.post("/refresh", asyncHandler(refreshToken));
 
 // -----------------------------------------------------------------------------
 // 3) Маршрут для логаута (отзыв refresh-токена):
@@ -35,15 +35,16 @@ router.post("/refresh", refreshToken);
 //    - Тело запроса (JSON): { refreshToken: string }
 //    - Ответ:  { message: string }
 // -----------------------------------------------------------------------------
-router.post("/logout", logout);
+router.post("/logout", asyncHandler(logout));
 
 // -----------------------------------------------------------------------------
 // Экспортируем роутер, чтобы подключить его в server.js
 // -----------------------------------------------------------------------------
 
 // Запрос на сброс пароля (отправка письма)
-router.post("/forgot-password", forgotPassword);
+router.post("/forgot-password", asyncHandler(forgotPassword));
 
 // Сброс пароля по токену
-router.post("/reset-password/:token", resetPassword);
+router.post("/reset-password/:token", asyncHandler(resetPassword));
+
 module.exports = router;

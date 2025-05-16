@@ -12,7 +12,7 @@ async function findUserByIdAndUpdate(userId, updateData) {
 }
 
 async function findUserByEmail(email) {
-  const user = await User.findOne({ email }).populate("role");
+  const user = await User.findOne({ email }).populate('role', 'name');
   if (user) {
     return user;
   }
@@ -90,7 +90,18 @@ async function assignRoleToUser(id, roleId) {
     .select("-password")
     .populate("role", "name")
     .lean();
-}
+};
+
+async function saveUser(user) {
+   await user.save();
+    return user;
+  
+};
+
+async function deleteResettoken(record) {
+  await record.deleteOne();
+  return true;
+};
 
 module.exports = {
   findActivationToken,
@@ -109,4 +120,6 @@ module.exports = {
   getUserProfileById,
   deleteUser,
   assignRoleToUser,
+  saveUser,
+  deleteResettoken,
 };

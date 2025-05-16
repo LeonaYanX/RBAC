@@ -14,7 +14,18 @@ const bcrypt = require("bcryptjs");
 exports.activate = async (req, res) => {
   const { token } = req.params;
   const { username, password, avatar, phone } = req.body;
+ if(!token || token === "undefined") {
+    return res.status(400).json({ error: "Token is required" });
+  }
+ 
+  const avatarValue = avatar && avatar.trim() !== '' ? avatar : null;
+// / avatar может быть пустым, если пользователь не загрузил его
+  const phoneValue = phone && phone.trim() !== '' ? phone : null;
+// / phone может быть пустым, если пользователь не указал его
 
+  if (!username || !password) {
+    return res.status(400).json({ error: "Username and password are required" });
+  }
   // 1) Находим токен
   const record = await findActivationToken(token);
   if (!record || record.expires < Date.now()) {
@@ -28,8 +39,8 @@ exports.activate = async (req, res) => {
   const updateData = {
     username,
     password: hashedPassword,
-    avatar,
-    phone,
+    avatar: avatarValue,
+    phone: phoneValue,
     status: "active",
   };
   await findUserByIdAndUpdate(record.user, updateData);
@@ -37,5 +48,5 @@ exports.activate = async (req, res) => {
   // 3) Удаляем запись активации
   await record.deleteOne();
 
-  res.json({ message: "Account activated" });
+  res.status(200).json({message: "Account activated" });
 };

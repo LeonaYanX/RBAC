@@ -5,7 +5,6 @@
  */
 
 const Role = require("../models/Role");
-const Permission = require("../models/Permission");
 
 class RoleFactory {
   // кеш в памяти для ускорения

@@ -23,10 +23,11 @@ const { createUser } = require("../controllers/adminController");
 // -----------------------------------------------------------------------------
 router.post(
   "/create-user",
-  authenticate, // 1) Проверяем валидность access-токена :contentReference[oaicite:0]{index=0}
+  authenticate, // 1) Проверяем валидность access-токена 
   authorize("role.assign"),
+  // 2) Проверяем, что у роли есть право назначать роли
   createUserRules,
-  validate, // 2) Проверяем, что у роли есть право назначать роли :contentReference[oaicite:1]{index=1}
+  validate, 
   asyncHandler(createUser) // 3) Вызываем логику создания пользователя и отправки письма
 );
 

@@ -18,6 +18,8 @@ const {
   findUserById,
   findRefreshToken,
   deleteRefreshToken,
+  saveUser,
+  deleteResettoken
 } = require("../services/dbServices");
 const sendEmail = require("../services/emailService");
 
@@ -25,12 +27,15 @@ const sendEmail = require("../services/emailService");
  * Вход: выдача access + refresh
  */
 exports.login = async (req, res) => {
-  try {
+  
     const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({ error: "Email and password are required" });
+    }
 
     // 1) Ищем пользователя и подгружаем имя роли
     const user = await findUserByEmail(email);
-    if (!user) return res.status(401).json({ error: "Неверные данные" });
+    if (!user) return res.status(401).json({ error: "Invalid data. " });
 
     // 1.1) Проверяем статус
     if (user.status !== "active") {
@@ -41,7 +46,7 @@ exports.login = async (req, res) => {
 
     // 2) Проверяем пароль
     const match = await bcrypt.compare(password, user.password);
-    if (!match) return res.status(401).json({ error: "Неверные данные" });
+    if (!match) return res.status(401).json({ error: "Invalid data..." });
 
     // 3) Сформируем access и refresh токены
     const roleName = user.role.name; // из populate
@@ -52,7 +57,7 @@ exports.login = async (req, res) => {
     });
 
     // 4) Отправляем клиенту оба токена
-    res.json({
+    res.status(200).json({
       accessToken,
       refreshToken,
       user: {
@@ -60,11 +65,9 @@ exports.login = async (req, res) => {
         username: user.username,
         email: user.email,
         role: roleName,
-      },
+        message: "Login successful" // сообщение для клиента
+      }, 
     });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
 };
 
 /**
@@ -73,13 +76,16 @@ exports.login = async (req, res) => {
  *    Body: { email }
  */
 exports.forgotPassword = async (req, res) => {
-  try {
+ 
     const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ error: "Email is required" });
+    }
     // 1. Найти пользователя по email
     const user = await findUserByEmail(email);
     if (!user) {
       // во избежание утечки информации, вернуть 200 независимо
-      return res.json({
+      return res.status(200).json({
         message: "If that email is registered, you will receive a reset link.",
       });
     }
@@ -104,13 +110,14 @@ exports.forgotPassword = async (req, res) => {
       <p>Click the link to reset your password (valid for 1d):</p>
       <a href="${link}">${link}</a>
     `;
-    await sendEmail(email, "Reset your password", html);
-
-    res.json({ message: "Reset link sent to email." });
-  } catch (err) {
-    console.error("forgotPassword error:", err);
-    res.status(500).json({ error: "Server error" });
-  }
+    try{
+      await sendEmail(email, "Reset your password", html);
+    }
+    catch (err) {
+      console.error("Error sending email:", err);
+      return res.status(500).json({ error: "Failed to send reset email" });
+    }
+     res.status(200).json({ message: "Reset link sent to email." });
 };
 
 /**
@@ -119,10 +126,15 @@ exports.forgotPassword = async (req, res) => {
  *    Body: { newPassword, confirmPassword }
  */
 exports.resetPassword = async (req, res) => {
-  try {
+  
     const { token } = req.params;
     const { newPassword, confirmPassword } = req.body;
-
+    if(!token || token === "undefined") {
+      return res.status(400).json({ error: "Token is required" });
+    }
+    if (!newPassword || !confirmPassword) {
+      return res.status(400).json({ error: "New password and confirmation are required" });
+    }
     // 1. Проверка совпадения паролей
     if (newPassword !== confirmPassword) {
       return res.status(400).json({ error: "Passwords do not match" });
@@ -143,16 +155,12 @@ exports.resetPassword = async (req, res) => {
     // 4. Хешировать новый пароль
     const hashed = await bcrypt.hash(newPassword, 10);
     user.password = hashed;
-    await user.save();
+    await saveUser(user); 
 
     // 5. Удалить использованный токен
-    await record.deleteOne();
+    await deleteResettoken(record); 
 
-    res.json({ message: "Password successfully reset" });
-  } catch (err) {
-    console.error("resetPassword error:", err);
-    res.status(500).json({ error: "Server error" });
-  }
+    res.status(200).json({ message: "Password successfully reset" });
 };
 
 /**
@@ -160,7 +168,6 @@ exports.resetPassword = async (req, res) => {
  * Клиент посылает свой refreshToken, мы проверяем его и если OK — даём новый access.
  */
 exports.refreshToken = async (req, res) => {
-  try {
     const { refreshToken } = req.body;
     if (!refreshToken)
       return res.status(400).json({ error: "Нет refreshToken" });
@@ -191,10 +198,7 @@ exports.refreshToken = async (req, res) => {
       { expiresIn: accessTokenLife }
     );
 
-    res.json({ accessToken: newAccessToken });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+    res.status(200).json({ accessToken: newAccessToken });
 };
 
 /**
@@ -205,5 +209,5 @@ exports.logout = async (req, res) => {
   if (refreshToken) {
     await deleteRefreshToken(refreshToken);
   }
-  res.json({ message: "Logged out" });
+  res.status(200).json({ message: "Logged out" });
 };
