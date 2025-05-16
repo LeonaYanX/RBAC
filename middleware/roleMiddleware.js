@@ -1,24 +1,34 @@
-// backend/middleware/roleMiddleware.js
-
 /**
- * Проверка допуска по списку разрешённых ролей.
- * Используйте так:
- *   router.get('/path', authenticate, allowRoles('admin','superadmin'), handler);
+ * Checks if the authenticated user has one of the allowed roles.
+ * Usage:
+ *   router.get('/path', authenticate, allowRoles('admin', 'superadmin'), handler);
+ *
+ * @param  {...string} allowedRoles - List of role names that are permitted
+ * @returns {import('express').RequestHandler} Express middleware
  */
 exports.allowRoles = (...allowedRoles) => {
   return (req, res, next) => {
-    // middleware authenticate до этого должен прописать req.user.roleName
+    // middleware authenticate must be called before this one
+    // and must set req.user with the roleName
     const roleName = req.user && req.user.roleName;
     if (!roleName) {
-      return res.status(401).json({ error: "User not authenticated" });
+      // No roleName in req.user
+      //This means the user is not authenticated
+      // or the authenticate middleware failed
+      return res
+        .status(401)
+        .json({ status: 'error', message: 'User not authenticated' });
     }
 
-    // если роль пользователя нет в списке allowedRoles — 403
+    // Check if the roleName is in the allowedRoles
     if (!allowedRoles.includes(roleName)) {
-      return res.status(403).json({ error: "Forbidden: insufficient role" });
+      // the user have role but don't dave the required permissions
+      return res
+        .status(403)
+        .json({ status: 'error', message: 'Forbidden: insufficient role' });
     }
 
-    // иначе — пропускаем дальше
+    
     next();
   };
 };

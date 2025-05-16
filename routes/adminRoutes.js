@@ -1,34 +1,77 @@
-// backend/routes/adminRoutes.js
-
 const express = require("express");
 const asyncHandler = require("express-async-handler");
 const { createUserRules, validate } = require("../validators/adminValidators");
 const router = express.Router();
 
-// 1) Подключаем middleware для аутентификации и авторизации
 const { authenticate, authorize } = require("../middleware/authMiddleware");
-
-// 2) Подключаем метод контроллера
 const { createUser } = require("../controllers/adminController");
 
-// -----------------------------------------------------------------------------
-// POST /api/admin/create-user
-//
-// Описание:
-//   - Доступен только залогиненному супер-админу.
-//   - Проверяется право 'role.assign' (назначение ролей).
-//   - Принимает JSON в теле: { email: string, roleName: string }.
-//   - Вызывает adminController.createUser, который создаёт
-//     пользователя со статусом 'inactive' и шлёт activation-письмо.
-// -----------------------------------------------------------------------------
+/**
+ * @module routes/admin
+ * @description Routes for admin actions
+ */
+
+/**
+ * @swagger
+ * /api/admin/create-user:
+ *   post:
+ *     summary: Create a new user
+ *     description: >
+ *       Creates a new user and sends an activation email.
+ *       Requires admin privileges.
+ *      The user will receive an email with an activation link.
+ *       The link will be valid for 24 hours.
+ *      The user will be created with an inactive status.
+ * 
+ *     tags:
+ *       - Admin
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       description: User data
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - roleName
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: user@example.com
+ *               roleName:
+ *                 type: string
+ *                 example: user
+ *     responses:
+ *       201:
+ *         description: User created successfully and email sent.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: User created successfully and email sent.
+ *       400:
+ *         description: Invalid request data.
+ *       401:
+ *         description: Unauthorized access.
+ *       403:
+ *         description: Forbidden access.
+ *       500:
+ *         description: Internal server error.
+ */
 router.post(
   "/create-user",
-  authenticate, // 1) Проверяем валидность access-токена 
+  authenticate,
   authorize("role.assign"),
-  // 2) Проверяем, что у роли есть право назначать роли
   createUserRules,
-  validate, 
-  asyncHandler(createUser) // 3) Вызываем логику создания пользователя и отправки письма
+  validate,
+  asyncHandler(createUser)
 );
 
 module.exports = router;

@@ -77,11 +77,11 @@ async function getUserProfileById(id) {
   return await User.findById(id).select("-password").populate("role", "name");
 }
 
-async function deleteUser(id) {
+async function deleteUserService(id) {
   return await User.findByIdAndDelete(id);
 }
 
-async function assignRoleToUser(id, roleId) {
+async function assignRoleToUserService(id, roleId) {
   return await User.findByIdAndUpdate(
     id,
     { role: roleId },
@@ -118,8 +118,8 @@ module.exports = {
   deleteRefreshToken,
   findAllUsers,
   getUserProfileById,
-  deleteUser,
-  assignRoleToUser,
+  deleteUserService,
+  assignRoleToUserService,
   saveUser,
   deleteResettoken,
 };

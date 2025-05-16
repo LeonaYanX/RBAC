@@ -1,7 +1,7 @@
 // backend/validators/authValidators.js
 const { body, validationResult } = require("express-validator");
 
-/** Правила для входа */
+/** Rules for login */
 exports.loginRules = [
   body("email")
     .exists()
@@ -15,7 +15,7 @@ exports.loginRules = [
     .withMessage("Min length 6"),
 ];
 
-/** Проверка результата */
+/** Checking result */
 exports.validate = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) throw errors; // попадёт в errorHandler

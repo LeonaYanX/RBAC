@@ -2,16 +2,16 @@
 const { body, validationResult } = require("express-validator");
 
 /**
- * Правила валидации для createUser:
- *  - email: обязателен, валиден формат
- *  - roleName: обязателен, строка не пустая
+ * Validation rules for createUser:
+ *  - email: required, must be a valid email
+ *  - roleName: required, must be a string, cannot be empty
  */
 exports.createUserRules = [
   body("email")
     .exists()
     .withMessage("Email is required")
     .isEmail()
-    .withMessage("Must be a valid email"), // проверка формата :contentReference[oaicite:1]{index=1}
+    .withMessage("Must be a valid email"), 
   body("roleName")
     .exists()
     .withMessage("Role name is required")
@@ -22,13 +22,13 @@ exports.createUserRules = [
 ];
 
 /**
- * Middleware для обработки ошибок валидации.
- * Если есть ошибки, бросает их — попадут в глобальный errorHandler.
+ * Middleware to validate request data.
+ * If there will be errors they will pass to errorHandler.
  */
 exports.validate = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    // Массив ошибок вида [{ field, msg }, ...]
+    //Error array: [{ field, msg }, ...]
     const extracted = errors
       .array()
       .map((e) => ({ field: e.param, msg: e.msg }));

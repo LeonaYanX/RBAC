@@ -17,15 +17,15 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// префикс /api
+// prefix /api
 app.use("/api/auth", authRoutes);
 app.use("/api", activationRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/users", userRoutes);
-// подключаем swagger-ui
+//  swagger-ui
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerFile));
 
-// обработка ошибок
+// error handling middleware
 app.use(errorHandler);
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

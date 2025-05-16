@@ -1,29 +1,40 @@
-// backend/models/RefreshToken.js
 const mongoose = require("mongoose");
 
-const RefreshTokenSchema = new mongoose.Schema({
-  token: {
-    // сам JWT refresh токен
-    type: String,
-    required: true,
-    unique: true,
+/**
+ * Schema for storing refresh tokens.
+ * Each document represents a single refresh token issued to a user.
+ *
+ * @typedef {Object} RefreshToken
+ * @property {string}                   token     - The JWT refresh token string (unique).
+ * @property {mongoose.Schema.Types.ObjectId} user - Reference to the User who owns this token.
+ * @property {Date}                     expires   - Date/time when the token expires.
+ * @property {Date}                     createdAt - Timestamp when the token was created.
+ * @property {Date}                     updatedAt - Timestamp when the token was last updated.
+ */
+const RefreshTokenSchema = new mongoose.Schema(
+  {
+    token: {
+      // The JWT refresh token
+      type: String,
+      required: true,
+      unique: true,
+    },
+    user: {
+      // Reference to the User model
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    expires: {
+      // Expiration date of the token
+      type: Date,
+      required: true,
+    },
   },
-  user: {
-    // на какого пользователя выдан
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
-  },
-  expires: {
-    // когда истекает (Date)
-    type: Date,
-    required: true,
-  },
-  createdAt: {
-    // дата создания — для статистики
-    type: Date,
-    default: Date.now,
-  },
-});
+  {
+    timestamps: true,            // Automatically add createdAt and updatedAt fields
+    
+  }
+);
 
 module.exports = mongoose.model("RefreshToken", RefreshTokenSchema);

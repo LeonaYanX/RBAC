@@ -1,46 +1,56 @@
-/**
- * RoleFactory инкапсулирует логику загрузки и кеширования роли.
- * Используйте RoleFactory.get('admin') вместо прямого Role.findOne(),
- * чтобы получить объект с массивом ключей permissions.
- */
-
 const Role = require("../models/Role");
 
+/**
+ * RoleFactory encapsulates and caches role-loading logic.
+ * Use RoleFactory.get('admin') instead of Role.findOne()
+ * to obtain a role object with an array of permission keys.
+ *
+ * @class
+ */
 class RoleFactory {
-  // кеш в памяти для ускорения
-  static cache = new Map(); // Map для хранения ролей
+  // In-memory cache for faster lookups
+  static cache = new Map(); // Map<roleName, { name: string, permissions: string[] }>
 
   /**
-   * Возвращает роль с ключами прав.
-   * @param {string} roleName
+   * Retrieves a role by name, including its permission keys.
+   * Caches the result to avoid repeated DB calls.
+   *
+   * @param {string} roleName - The name of the role to fetch.
    * @returns {Promise<{ name: string, permissions: string[] }>}
+   * @throws {Error} If no role with the given name is found.
    */
   static async get(roleName) {
-    // если есть в кеше — возвращаем сразу
+    // Return from cache if available
     if (RoleFactory.cache.has(roleName)) {
       return RoleFactory.cache.get(roleName);
     }
 
-    // иначе загружаем из БД
-    const roleDoc = await Role.findOne({ name: roleName }).populate(
-      "permissions"
-    );
+    // Otherwise load from database
+    const roleDoc = await Role.findOne({ name: roleName })
+      .populate("permissions") // fetch Permission documents
+      .lean();                 // ← CHANGED: add lean() for plain JS object
+
     if (!roleDoc) {
       throw new Error(`Role "${roleName}" not found`);
     }
 
-    // извлекаем только ключи прав
+    // Extract only permission keys
     const role = {
       name: roleDoc.name,
-      permissions: roleDoc.permissions.map((p) => p.key), // массив ключей прав
+      permissions: roleDoc.permissions.map((p) => p.key),
     };
 
+    // Cache for future requests
     RoleFactory.cache.set(roleName, role);
     return role;
   }
 
   /**
-   * Сбрасывает кеш (вызывать при изменении ролей в БД).
+   * Clears the in-memory cache.
+   * Call this method after updating roles or permissions in the database
+   * to ensure subsequent calls fetch fresh data.
+   *
+   * @returns {void}
    */
   static clearCache() {
     RoleFactory.cache.clear();

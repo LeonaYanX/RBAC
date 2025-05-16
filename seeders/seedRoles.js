@@ -1,4 +1,6 @@
 /**
+ * This script is used to seed the database with default permissions.
+ * It connects to the MongoDB database, checks if certain permissions exist,
  * node backend/seeders/seedRoles.js
  */
 
@@ -9,36 +11,36 @@ const Permission = require("../models/Permission");
 
 dotenv.config();
 mongoose.connect(process.env.MONGO_URI).then(async () => {
-  // Конфигурация ролей и прав
-  // Здесь можено настроить роли и их права
+  // Configure the role permissions
+  // This is a mapping of role names to their respective permission keys.
   const rolesConfig = {
-    user: ["user.read"], // обычный пользователь — только чтение пользователей
-    moderator: ["user.read", "user.delete"], // модератор — читать и удалять пользователей
-    admin: ["user.*", "role.assign"], // админ — полный CRUD по users + назначение ролей
-    assistant: ["user.read"], // ассистент — только чтение
-    superadmin: ["*"], // супер-админ — все права
+    user: ["user.read"], // usual user — only read
+    moderator: ["user.read", "user.delete"], // moderator — read + delete
+    admin: ["user.*", "role.assign"], // admin — all user permissions + assign roles
+    assistant: ["user.read"], // assistant — only read
+    superadmin: ["*"], // superadmin — all permissions
   };
 
   for (const [roleName, permKeys] of Object.entries(rolesConfig)) { // Перебираем роли и их права
-    // 1) Собираем ObjectId разрешений по ключам
+    // 1) gathering ObjectId of permissions
     let perms;
     if (permKeys.includes("*")) {
-      // '*' — берём все записи из permissions
+      // '*' — taking all permissions from the database
       perms = await Permission.find();
     } else {
       perms = await Permission.find({ key: { $in: permKeys } });
     }
     const permIds = perms.map((p) => p._id);
 
-    // 2) Создаём или обновляем роль
+    // 2) Creating/updating the role
+    // upsert: true — creates the role if it doesn't exist
     await Role.findOneAndUpdate(
       { name: roleName },
       { permissions: permIds },
       { upsert: true, new: true, setDefaultsOnInsert: true } 
-      // upsert: true — создаёт, если не существует
-      // new: true — возвращает обновлённый документ
-      // setDefaultsOnInsert: true — устанавливает значения по умолчанию
-      // при создании нового документа
+      // new: true — returns the updated document
+      // setDefaultsOnInsert: true — sets default values for fields
+      // that are not specified in the update (like description)
     );
 
     console.log(` Role synced: ${roleName}`);

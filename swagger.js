@@ -1,23 +1,26 @@
 // backend/swagger.js
 const swaggerAutogen = require("swagger-autogen")();
 
-// Настройка документа: заголовок, описание и (при необходимости) авторизация
+// Swagger documentation
+//This file is used to generate the swagger-output.json file
+// with the help of the swagger-autogen package.
 const doc = {
   info: {
     title: "RBAC API",
     description: "Документация API для системы RBAC",
   },
-  // указываем, где будет работать ваш сервер (host + порт)
+  // Shows only the first level of the path
   host: "localhost:5000",
   schemes: ["http"],
 };
 
-// Список файлов с вашими маршрутизаторами (можно glob-паттерн)
+// shows files with endpoints
 const outputFile = "./swagger-output.json";
 const endpointsFiles = ["./app.js", "./routes/*.js"];
 
-// Генерируем swagger-output.json при старте
+// Generate swagger-output.json
 swaggerAutogen(outputFile, endpointsFiles, doc).then(() => {
-  // После генерации запускаем ваш сервер
+  // You can also start the server after the documentation is generated
+  // require('./app.js');
   require("./app.js");
 });
