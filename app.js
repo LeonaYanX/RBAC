@@ -1,5 +1,6 @@
 const express = require("express");
 const errorHandler = require("./middleware/errorMiddleware");
+const corsOptions  = require("./config/cors");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const connectDB = require("./config/db");
@@ -10,11 +11,13 @@ const adminRoutes = require("./routes/adminRoutes");
 const activationRoutes = require("./routes/activationRoutes");
 const userRoutes = require("./routes/userRoutes");
 
+
+
 dotenv.config();
 connectDB();
 
 const app = express();
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // prefix /api

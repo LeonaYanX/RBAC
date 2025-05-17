@@ -17,13 +17,14 @@ const RefreshTokenSchema = new mongoose.Schema(
       // The JWT refresh token
       type: String,
       required: true,
-      unique: true,
+      
     },
     user: {
       // Reference to the User model
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
+      unique: true, // Ensure that each user can only have one refresh token
     },
     expires: {
       // Expiration date of the token

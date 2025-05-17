@@ -67,7 +67,7 @@ exports.login = async (req, res) => {
   // 4) Generate tokens
   const roleName = user.role.name;  // from populated role
   const accessToken = generateAccessToken({ id: user._id, roleName });
-  const refreshToken = await generateRefreshToken({ id: user._id, roleName });
+  const refreshToken = await generateRefreshToken(user._id);
 
   // 5) Send response
   res.status(200).json({

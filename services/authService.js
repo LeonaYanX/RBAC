@@ -24,22 +24,28 @@ function generateAccessToken(user) {
  * @param {{ _id: string, roleName: string }} user
  * @returns {Promise<string>} JWT
  */
-async function generateRefreshToken(user) {
-  // payload
-  const payload = { id: user._id, role: user.roleName };
+async function generateRefreshToken(userId) {
+  // 1) forming new JWT
+  const payload = { id: userId };
   const token = jwt.sign(payload, refreshTokenSecret, {
-    expiresIn: refreshTokenLife,
+    expiresIn: refreshTokenLife, // e.g. '7d'
   });
 
-  // Expires in 7 days
-  // (e.g. new Date(Date.now() + 7 * 24 * 60 * 60 * 1000))
-  const expires = new Date();
-  expires.setDate(expires.getDate() + 7);
+  // 2) Counting the expiration date
+  const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
 
-  // Saving the refresh token to DB
-  await RefreshToken.create({ token, user: user._id, expires });
+  // 3) updating or creating the refresh token in the database
+  const filter = { user: userId };
+  const update = { token, expires };
+  const options = {
+    upsert: true,    // create if not exists 
+    new: true,       // return updated doc
+    setDefaultsOnInsert: true,
+  };
+
+  await RefreshToken.findOneAndUpdate(filter, update, options).exec();  
   return token;
-}
+};
 
 module.exports = {
   generateAccessToken,

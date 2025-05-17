@@ -1,4 +1,5 @@
 // backend/models/Role.js
+require("./Permission");
 const mongoose = require("mongoose");
 const autopopulate = require("mongoose-autopopulate");            //added autopopulate plugin
 
