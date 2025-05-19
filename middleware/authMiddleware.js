@@ -12,12 +12,11 @@ const RoleFactory = require("../factories/roleFactory");
  * @param {import('express').NextFunction} next  Express next middleware
  */
 async function authenticate(req, res, next) {
-  // 1. Read Authorization header
   const authHeader = req.headers.authorization;
   if (!authHeader) {
     return res
       .status(401)
-      .json({ status: "error", message: "No authorization header" });        
+      .json({ status: "error", message: "No authorization header" });
   }
 
   const [scheme, token] = authHeader.split(" ");
@@ -25,29 +24,29 @@ async function authenticate(req, res, next) {
     return res
       .status(401)
       .json({
-        status: "error",                                                     
+        status: "error",
         message: 'Bad authorization header format. Use "Bearer <token>"',
       });
   }
 
-  // 2. Verify token
   let payload;
   try {
     payload = jwt.verify(token, accessTokenSecret);
   } catch (err) {
     return res
       .status(401)
-      .json({ status: "error", message: "Invalid or expired token" });        
+      .json({ status: "error", message: "Invalid or expired token" });
   }
 
-  // 3. Attach user info to request
+  // CHANGED: читаем payload.role вместо payload.roleName
   req.user = {
     id: payload.id,
-    roleName: payload.role,
+    roleName: payload.role, // CHANGED
   };
 
   return next();
 }
+
 
 /**
  * Checks that the authenticated user has the specified permission.

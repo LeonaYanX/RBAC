@@ -5,7 +5,10 @@ const {
   findRoleByName,
   createPartialUser,
   createActivationToken,
+  getRolesService,
 } = require("../services/dbServices");
+
+const Role = require('../models/Role');
 
 /**
  * Creates a placeholder user (inactive) and sends activation email.
@@ -79,4 +82,14 @@ exports.createUser = async (req, res) => {
   res
     .status(200)
     .json({ status: "success", message: "Activation email sent" });
+};
+
+exports.getAllRoles = async (req, res) => {
+  const roles = await getRolesService();
+  if (!roles) {
+    return res
+      .status(404)
+      .json({ status: 'error', message: 'No roles found' });
+  }
+  res.json({ status: 'success', data: roles });
 };

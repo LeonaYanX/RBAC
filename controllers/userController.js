@@ -1,4 +1,4 @@
-const { toUserVM } = require("../viewModels/userViewModel");
+const { toUserVM , toUserVMwithoutId} = require("../viewModels/userViewModel");
 const {
   findAllUsers,
   getUserProfileById,
@@ -51,7 +51,7 @@ exports.getUser = async (req, res) => {
   }
 
   // toUserVM accepts a single object
-  res.status(200).json({ status: "success", data: toUserVM(user) });   
+  res.status(200).json({ status: "success", data: toUserVMwithoutId(user) });   
 };
 
 /**

@@ -4,7 +4,7 @@ const { createUserRules, validate } = require("../validators/adminValidators");
 const router = express.Router();
 
 const { authenticate, authorize } = require("../middleware/authMiddleware");
-const { createUser } = require("../controllers/adminController");
+const { createUser , getAllRoles } = require("../controllers/adminController");
 
 /**
  * @module routes/admin
@@ -73,5 +73,8 @@ router.post(
   validate,
   asyncHandler(createUser)
 );
+
+
+router.get('/roles', authenticate, authorize('role.assign'), asyncHandler(getAllRoles));
 
 module.exports = router;

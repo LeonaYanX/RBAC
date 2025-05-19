@@ -22,6 +22,7 @@ const {
   deleteResettoken,
 } = require("../services/dbServices");
 const sendEmail = require("../services/emailService");
+const RoleFactory = require('../factories/roleFactory');
 
 /**
  * Handles user login: validates credentials, issues access & refresh tokens.
@@ -33,30 +34,25 @@ const sendEmail = require("../services/emailService");
  */
 exports.login = async (req, res) => {
   const { email, password } = req.body;
-
-  // Validate input
   if (!email || !password) {
     return res
       .status(400)
-      .json({ status: "error", message: "Email and password are required" }); 
+      .json({ status: "error", message: "Email and password are required" });
   }
 
-  // 1) Find user by email
-  const user = await findUserByEmail(email);                                
+  const user = await findUserByEmail(email);
   if (!user) {
     return res
       .status(401)
-      .json({ status: "error", message: "Invalid email or password" });     
+      .json({ status: "error", message: "Invalid email or password" });
   }
 
-  // 2) Check status
   if (user.status !== "active") {
     return res
       .status(403)
       .json({ status: "error", message: "Please activate your account first" });
   }
 
-  // 3) Verify password
   const match = await bcrypt.compare(password, user.password);
   if (!match) {
     return res
@@ -64,12 +60,16 @@ exports.login = async (req, res) => {
       .json({ status: "error", message: "Invalid email or password" });
   }
 
-  // 4) Generate tokens
-  const roleName = user.role.name;  // from populated role
-  const accessToken = generateAccessToken({ id: user._id, roleName });
+  
+  const roleName = user.role.name;
+  const payload = { id: user._id.toString(), role: roleName }; 
+  const accessToken = jwt.sign(payload, accessTokenSecret, {
+    expiresIn: accessTokenLife,
+  });
   const refreshToken = await generateRefreshToken(user._id);
 
-  // 5) Send response
+  const { permissions } = await RoleFactory.get(roleName);
+
   res.status(200).json({
     status: "success",
     data: {
@@ -80,6 +80,7 @@ exports.login = async (req, res) => {
         username: user.username,
         email: user.email,
         role: roleName,
+        permissions,
       },
     },
   });
@@ -210,7 +211,6 @@ exports.resetPassword = async (req, res) => {
  */
 exports.refreshToken = async (req, res) => {
   const { refreshToken } = req.body;
-
   if (!refreshToken) {
     return res
       .status(400)
@@ -240,8 +240,9 @@ exports.refreshToken = async (req, res) => {
       .json({ status: "error", message: "Refresh token expired" });
   }
 
+  
   const newAccessToken = jwt.sign(
-    { id: payload.id, role: payload.role },
+    { id: payload.id, role: payload.role }, 
     accessTokenSecret,
     { expiresIn: accessTokenLife }
   );
@@ -251,6 +252,7 @@ exports.refreshToken = async (req, res) => {
     data: { accessToken: newAccessToken },
   });
 };
+
 
 /**
  * Logs out the user by deleting their refresh token.

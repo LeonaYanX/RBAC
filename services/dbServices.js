@@ -7,6 +7,11 @@ async function findActivationToken(token) {
   return await ActivationToken.findOne({ token });
 }
 
+async function getRolesService() {
+   const roles = await Role.find().select('name -_id').lean();
+    return roles.map(r => r.name);
+}
+
 async function findUserByIdAndUpdate(userId, updateData) {
   return await User.findByIdAndUpdate(userId, updateData, { new: true });
 }
@@ -122,4 +127,5 @@ module.exports = {
   assignRoleToUserService,
   saveUser,
   deleteResettoken,
+  getRolesService,
 };

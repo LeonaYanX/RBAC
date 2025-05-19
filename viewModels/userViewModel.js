@@ -11,6 +11,20 @@ function toUserVM(user) {
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
   };
-}
+};
 
-module.exports = { toUserVM };
+function toUserVMwithoutId(user) {
+  return {
+    username: user.username,
+    email: user.email,
+    role: user.role.name, // populate('role','name')
+    status: user.status,
+    avatar: user.avatar,
+    phone: user.phone,
+    createdAt: user.createdAt,
+    updatedAt: user.updatedAt,
+  };
+};
+
+
+module.exports = { toUserVM , toUserVMwithoutId };
