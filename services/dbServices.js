@@ -3,6 +3,18 @@ const User = require("../models/User");
 const Role = require("../models/Role");
 const PasswordResetToken = require("../models/PasswordResetToken");
 const RefreshToken = require("../models/RefreshToken");
+const Photo = require('../models/Photo');
+
+// Save photo to MongoDB
+async function savePhoto(buffer, mimeType, ownerId) {
+  const photo = await Photo.create({ data: buffer, contentType: mimeType, owner: ownerId });
+  return photo;
+}
+
+// Get photo by ID
+async function getPhotoById(id) {
+  return await Photo.findById(id);
+}
 async function findActivationToken(token) {
   return await ActivationToken.findOne({ token });
 }
@@ -132,4 +144,6 @@ module.exports = {
   saveUser,
   deleteResettoken,
   getRolesService,
+  savePhoto,
+  getPhotoById,
 };

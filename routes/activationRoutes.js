@@ -2,6 +2,8 @@ const express = require("express");
 const asyncHandler = require("express-async-handler");
 const router = express.Router();
 const { activate } = require("../controllers/activationController");
+const multer = require('multer');
+const upload = multer();
 
 /**
  * @module routes/activation
@@ -29,6 +31,9 @@ const { activate } = require("../controllers/activationController");
  *       500:
  *         description: Internal server error.
  */
-router.post("/activate/:token", asyncHandler(activate));
+router.post(
+  "/activate/:token",
+   upload.array('photos', 5),        // limit to 5 photos
+   asyncHandler(activate));
 
 module.exports = router;

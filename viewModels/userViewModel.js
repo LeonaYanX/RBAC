@@ -6,7 +6,7 @@ function toUserVM(user) {
     email: user.email,
     role: user.role.name, // populate('role','name')
     status: user.status,
-    avatar: user.avatar,
+    photos: user.photos,
     phone: user.phone,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
@@ -19,7 +19,7 @@ function toUserVMwithoutId(user) {
     email: user.email,
     role: user.role.name, // populate('role','name')
     status: user.status,
-    avatar: user.avatar,
+    photos: user.photos,
     phone: user.phone,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
