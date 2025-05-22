@@ -5,7 +5,7 @@ const mongoose = require("mongoose");
  * @property {string} username - Unique username for the user.
  * @property {string} password - Hashed password for the user.
  * @property {string} email - Unique email address for the user.
- * @property {string} [avatar] - URL to the user's avatar image.
+ * @property {string} [photos] - URL to the user's avatar image.
  * @property {string} [phone] - Phone number of the user.
  * @property {'active'|'inactive'} status - Status of the user, either 'active' or 'inactive'.
  * @property {mongoose.Types.ObjectId} role - Reference to the Role model, defining the user's role.
@@ -45,10 +45,12 @@ const UserSchema = new mongoose.Schema({
    * URL to the user's avatar image.
    * This is an optional field and defaults to an empty string if not provided.
    */
-  avatar: {
-    type: String,
-    default: "",
-  },
+  photos: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Photo",
+    },
+  ],
 
   /**
     * Phone number of the user.

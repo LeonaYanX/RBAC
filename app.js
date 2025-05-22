@@ -10,7 +10,7 @@ const authRoutes = require("./routes/authRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const activationRoutes = require("./routes/activationRoutes");
 const userRoutes = require("./routes/userRoutes");
-
+const photoRoutes = require("./routes/photoRoutes");
 
 
 dotenv.config();
@@ -25,6 +25,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api", activationRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api", photoRoutes);// todo: see if it works with the same prefix
 //  swagger-ui
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerFile));
 

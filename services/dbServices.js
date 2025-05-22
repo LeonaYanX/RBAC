@@ -74,12 +74,16 @@ async function findAllUsers() {
   const users = await User.find()
     .select("-password") // убрать поле password из выдачи
     .populate("role", "name") // вместо ObjectId отдаём { name }
+    .populate("photos") // вместо ObjectId отдаём { name }
     .lean(); // преобразуем в JSON
   return users;
 }
 
 async function getUserProfileById(id) {
-  return await User.findById(id).select("-password").populate("role", "name");
+  return await User.findById(id)
+  .select("-password")
+  .populate("role", "name")
+  .populate("photos").lean();
 }
 
 async function deleteUserService(id) {
